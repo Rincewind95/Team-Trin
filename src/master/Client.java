@@ -1,6 +1,7 @@
 package master;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Client
 {
@@ -9,4 +10,7 @@ public class Client
     HashMap<Cache, Integer> parents;
     
     HashMap<File, Integer> requestCnt;
+   
+    
+    HashSet<HeapElement> heapBits;
 }
