@@ -11,4 +11,6 @@ public class Cache
     HashSet<Client> clients;
     
     HashSet<File> files;
+    
+    HashSet<HeapElement> heapBits;
 }
