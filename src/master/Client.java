@@ -10,5 +10,5 @@ public class Client
     HashMap<Cache, Integer> parents;
     
     HashMap<File, Integer> requestCnt;
-   
+    
 }

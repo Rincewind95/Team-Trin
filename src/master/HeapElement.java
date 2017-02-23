@@ -7,6 +7,11 @@ public class HeapElement
     Cache cacheRef;
     File fileRef;
     
+    public HeapElement()
+    {
+        
+    }
+    
     public HeapElement(Cache c, File f)
     {
         cacheRef = c;

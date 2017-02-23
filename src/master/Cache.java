@@ -4,7 +4,6 @@ import java.util.HashSet;
 
 public class Cache
 {
-    int cacheID;
     int totalVolume;
     int volumeLeft;
     
@@ -13,4 +12,5 @@ public class Cache
     HashSet<File> files;
     
     HashSet<HeapElement> heapBits;
+    
 }

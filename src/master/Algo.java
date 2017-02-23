@@ -19,16 +19,30 @@ public class Algo
     
     static HashMap<HeapElement, Integer> elementToIdx;
     
+    static HashMap<Cache, HashMap<File, HeapElement>> pairToElem;
+    
     public static void main()
     {
         // init part
         heap = new ArrayList<HeapElement>();
         elementToIdx = new HashMap<HeapElement, Integer>();
+        pairToElem = new HashMap();
         for(Cache c : caches)
         {
             for(File f : files)
             {
                 HeapElement h = new HeapElement(c, f);
+                if(!pairToElem.containsKey(c))
+                {
+                    HashMap<File, HeapElement> dest = new HashMap();
+                    dest.put(f, h);
+                    pairToElem.put(c, dest);
+                }
+                else
+                {
+                    HashMap<File, HeapElement> dest = pairToElem.get(c);
+                    dest.put(f, h);
+                }
                 heap.add(h);
                 heapSize++;
                 percolate(heapSize-1);
@@ -45,14 +59,32 @@ public class Algo
             if(c.volumeLeft >= f.size)
             {
                 // it fits so we consider it
-            
+                c.volumeLeft -= f.size;
+                c.files.add(f);
+                
                 // modify all the relevant elements
-                HashSet<HeapElement> toConsider = new HashSet();
                 for(Client cli : c.clients)
                 {
                     if(cli.requestCnt.containsKey(f))
                     {
-                        
+                        for(Cache parent : cli.parents.keySet())
+                        {
+                            if(!parent.equals(c) && parent.heapBits.contains(pairToElem.get(parent).get(f)))
+                            {
+                                HeapElement curr = pairToElem.get(parent).get(f);
+                                
+                                int refcnt = cli.requestCnt.get(f);
+                                int rootDist = cli.rootDist;
+                                int cacheDist = cli.parents.get(parent);
+                                if(rootDist > cacheDist)
+                                {
+                                    curr.value -= refcnt*(rootDist-cacheDist);
+                                    int idx =elementToIdx.get(curr);
+                                    sift(idx);
+                                    percolate(idx);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -105,6 +137,8 @@ public class Algo
     static HeapElement pop()
     {
         HeapElement result = heap.get(0);
+        result.cacheRef.heapBits.remove(result);
+        result.fileRef.heapBits.remove(result);
         int swapidx = heapSize - 1;
         elementToIdx.put(heap.get(0),swapidx);
         elementToIdx.put(heap.get(swapidx),0);
