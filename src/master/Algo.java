@@ -45,15 +45,15 @@ public class Algo
             if(c.volumeLeft >= f.size)
             {
                 // it fits so we consider it
-            }
             
-            // modify all the relevant elements
-            HashSet<HeapElement> toConsider = new HashSet();
-            for(Client cli : c.clients)
-            {
-                if(cli.requestCnt.containsKey(f))
+                // modify all the relevant elements
+                HashSet<HeapElement> toConsider = new HashSet();
+                for(Client cli : c.clients)
                 {
-                    
+                    if(cli.requestCnt.containsKey(f))
+                    {
+                        
+                    }
                 }
             }
         }
