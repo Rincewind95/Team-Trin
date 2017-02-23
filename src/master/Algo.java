@@ -4,28 +4,41 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
-public class Algo
-{
-//    ParseInput parser;
-    static int cacheCnt = 100;
-    static int fileCnt = 100;
-    
-    static Cache [] caches = new Cache[cacheCnt];
-    static File [] files = new File[fileCnt];
-
+public class Algo {
+	
+	int cacheCnt;
+    int fileCnt;
+    Client[] clients;
     static ArrayList<HeapElement> heap;
     static int heapSize = 0; //TO CHANGE
     
+    static Cache [] caches;
+    static File [] files;
     static HashMap<HeapElement, Integer> elementToIdx;
+	
+    int [][] valueMatrix = new int[cacheCnt][fileCnt];
+	
+    public Algo() {
+    	this.parse(getClass().getResourceAsStream("kittens.in"));
+		
+	}
     
     static HashMap<Cache, HashMap<File, HeapElement>> pairToElem;
     
-    public static void main()
+    public static void main(String[] args)
     {
         // init part
+    	Algo a = new Algo();
         heap = new ArrayList<HeapElement>();
         elementToIdx = new HashMap<HeapElement, Integer>();
+        
         pairToElem = new HashMap();
         for(Cache c : caches)
         {
@@ -146,6 +159,100 @@ public class Algo
         heapSize--;
         sift(0);
         return result;
+    }
+    
+    
+    public void parse(InputStream in) {
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+			
+			String firstLine = br.readLine();
+			String[] firstLineArray = firstLine.split(" ");
+			
+			String secondLine = br.readLine();
+			String[] secondLineArray = secondLine.split(" ");
+			
+			this.fileCnt = Integer.parseInt(firstLineArray[0]);
+			this.files = new File[this.fileCnt];
+			for (int i=0; i<this.fileCnt; i++) {
+				files[i] = new File(i, Integer.parseInt(secondLineArray[i]));
+			}
+			
+			int numEndpoints = Integer.parseInt(firstLineArray[1]);
+			this.clients = new Client[numEndpoints];
+			for (int i=0; i<numEndpoints; i++) {
+				clients[i] = new Client(i);
+			}
+			
+			int numRequests = Integer.parseInt(firstLineArray[2]);
+			
+			this.cacheCnt = Integer.parseInt(firstLineArray[3]);
+			int cacheSize = Integer.parseInt(firstLineArray[4]);
+			this.caches = new Cache[this.cacheCnt];
+			for (int i=0; i<this.cacheCnt; i++) {
+				this.caches[i] = new Cache(i, cacheSize);
+			}
+			
+			
+			
+			for (int i=0; i<numEndpoints; i++) {
+				String endpoint = br.readLine();
+				String[] endpointArray = endpoint.split(" ");
+				int datacentreLatency = Integer.parseInt(endpointArray[0]);
+				this.clients[i].rootDist = datacentreLatency;
+				int numConnectedCaches = Integer.parseInt(endpointArray[1]);
+				for (int j=0; j<numConnectedCaches; j++) {
+					String cacheLatency = br.readLine();
+					String[] cacheLatencyArray = cacheLatency.split(" ");
+					int cacheID = Integer.parseInt(cacheLatencyArray[0]);
+					int latency = Integer.parseInt(cacheLatencyArray[1]);
+					
+					// Update Cache to contain clientID
+					this.caches[cacheID].updateClients(this.clients[i]);
+					
+					//Update Client to contain caches connected to it and latency
+					this.clients[i].updateParents(this.caches[cacheID], latency);
+				
+				}
+			}
+			
+			for (int i=0; i<numRequests; i++) {
+				String requestLine = br.readLine();
+				String[] requestLineArray = requestLine.split(" ");
+				int videoID = Integer.parseInt(requestLineArray[0]);
+				int endpointID = Integer.parseInt(requestLineArray[1]);
+				int freqRequests = Integer.parseInt(requestLineArray[2]);
+				this.files[videoID].addRequest(clients[endpointID], freqRequests);
+			}
+			
+			br.close();
+			
+		}
+		catch (IOException e) {
+			System.out.println("HELP");
+		}
+		
+
+	}
+    
+    public void output() {
+    	try {
+    		PrintWriter pw = new PrintWriter(new FileWriter("out.txt"));
+    		pw.write(cacheCnt);
+    		for (int i=0; i<cacheCnt; i++) {
+    			String cacheID = Integer.toString(i);
+    			String videos = "";
+    			for (File f: caches[i].files) {
+    				videos += " " + Integer.toString(f.fileID);
+    			}
+    			String finalStr = cacheID + videos;
+    			pw.write(finalStr);
+    		}
+    		pw.flush();
+    	}
+    	catch (IOException e) {
+    		System.out.println("HELP in output");
+    	}
     }
     
 }
